@@ -109,7 +109,7 @@ begin
 
                 when 0 =>                       -- state reset everything
 
-                    if (signal_current_byte_press = "01010101") then        -- wait for unpress   ->  go to state 1
+                    if (signal_current_byte_press = X"55") then        -- wait for unpress   ->  go to state 1
                         signal_main_next_state <= 1;
                     else
                         signal_main_next_state <= 0;
@@ -117,14 +117,14 @@ begin
                 
                 when 1 =>                       -- wait for press first digit
 
-                    if(signal_current_byte_press /= "01010101") then        -- if user press some but -> go to state 2
+                    if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
                         signal_main_next_state <= 2;
                     else
                         signal_main_next_state <= 1;
                     end if;
 
                 when 2 =>
-                    if (signal_current_byte_press = "01010101") then        -- wait for unpress 'U'  ->  go to state 1
+                    if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
                         signal_main_next_state <= 3;
                     else
                         signal_main_next_state <= 2;
@@ -132,7 +132,7 @@ begin
 
                 when 3 =>                       -- wait for press second digit
 
-                    if(signal_current_byte_press /= "01010101") then        -- if user press some but -> go to state 2
+                    if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
                         signal_main_next_state <= 4;
                     else
                         signal_main_next_state <= 3;
@@ -140,21 +140,21 @@ begin
 
 
                 when 4 =>                       -- wait for unpress 'U'
-                    if (signal_current_byte_press = "01010101") then        -- wait for unpress 'U'  ->  go to state 1
+                    if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
                         signal_main_next_state <= 5;
                     else
                         signal_main_next_state <= 4;
                     end if;
 
                 when 5 =>               -- wait for press '*'  "00101010"
-                    if(signal_current_byte_press = "00101010") then
+                    if(signal_current_byte_press = X"2A") then
                         signal_main_next_state <= 6;
                     else
                         signal_main_next_state <= 5;
                     end if;
 
                 when 6 =>                   -- wait for unpress 'U'
-                    if(signal_current_byte_press = "01010101") then
+                    if(signal_current_byte_press = X"55") then
                         signal_main_next_state <= 7;
                     else
                         signal_main_next_state <= 6;
