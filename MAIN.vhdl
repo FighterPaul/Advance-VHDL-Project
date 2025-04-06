@@ -51,6 +51,10 @@ constant CORRECT_FIR_DIGIT : std_logic_vector(7 downto 0) := X"32";
 constant CORRECT_SEC_DIGIT : std_logic_vector(7 downto 0) := X"35";
 
 
+signal display_debug : std_logic := '1';
+signal sentence_display : std_logic_vector(127 downto 0);
+
+
 
 -- X"59",X"6F",X"75",X"20",X"50",X"72",X"65",X"73",X"73",X"20",X"41"
 -- You Press A
@@ -79,34 +83,45 @@ begin
     -- X"50" & X"72" & X"65" & X"73" & X"73" & X"20" & X"53" & X"65" & X"63" & X"20" & X"44" & X"69" & X"20" & X"20"
     --Press Sec Di  
 
+
+    -- X"57" & X"52" & X"4F" & X"4E" & X"47" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20" & X"20"
+    -- WRONG
+
+    --COR
     process(clk)
     begin
-        case (count_clk) is
-            when 0 to 10000000 =>
-                signal_byte_send <= X"59" & X"6F" & X"75" & X"20" & X"50"
-                                 & X"72" & X"65" & X"73" & X"73" & X"20"
-                                 & signal_current_byte_press & X"20" & X"20" & X"20" & X"20"
-                                 & X"20";
-
-            when 10000001 to 20000000 =>
-                signal_byte_send <= X"4D" & X"41" & X"49" & X"4E" & X"20" 
-                                    & X"53" & X"54" & X"41" & X"54" & X"45" 
-                                    & X"20" & std_logic_vector(to_unsigned(signal_main_state + 48, 8)) & X"20" & X"20" & X"20"
+        if display_debug = '1' then
+            case (count_clk) is
+                when 0 to 10000000 =>
+                    signal_byte_send <= X"59" & X"6F" & X"75" & X"20" & X"50"
+                                    & X"72" & X"65" & X"73" & X"73" & X"20"
+                                    & signal_current_byte_press & X"20" & X"20" & X"20" & X"20"
                                     & X"20";
 
-            when 20000001 to 30000000 => 
-                signal_byte_send <= X"50"  & X"72" & X"65" & X"73" & X"73" 
-                                    & X"20" & X"46" & X"69" & X"72" & X"20" 
-                                    & X"44" & X"69" & X"20" & X"20" & press_fir_digit
-                                    & X"20";
+                when 10000001 to 20000000 =>
+                    signal_byte_send <= X"4D" & X"41" & X"49" & X"4E" & X"20" 
+                                        & X"53" & X"54" & X"41" & X"54" & X"45" 
+                                        & X"20" & std_logic_vector(to_unsigned(signal_main_state + 48, 8)) & X"20" & X"20" & X"20"
+                                        & X"20";
 
-            when others =>
-                signal_byte_send <= X"50" & X"72" & X"65" & X"73" & X"73" 
-                                    & X"20" & X"53" & X"65" & X"63" & X"20" 
-                                    & X"44" & X"69" & X"20" & X"20" & press_sec_digit
-                                    & X"20";
-                
-        end case;
+                when 20000001 to 30000000 => 
+                    signal_byte_send <= X"50"  & X"72" & X"65" & X"73" & X"73" 
+                                        & X"20" & X"46" & X"69" & X"72" & X"20" 
+                                        & X"44" & X"69" & X"20" & X"20" & press_fir_digit
+                                        & X"20";
+
+                when others =>
+                    signal_byte_send <= X"50" & X"72" & X"65" & X"73" & X"73" 
+                                        & X"20" & X"53" & X"65" & X"63" & X"20" 
+                                        & X"44" & X"69" & X"20" & X"20" & press_sec_digit
+                                        & X"20";
+                    
+            end case;
+        else
+            signal_byte_send <= sentence_display;
+        end if;
+
+
     end process;
 
 
@@ -198,9 +213,21 @@ begin
                     end if;
 
                 when 8 =>
+                    display_debug <= '0';
+                    sentence_display <= X"43" & X"4F" & X"52" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20";
+
                     signal_main_next_state <= 8;
-                    
+
                 when 9 =>
+                    display_debug <= '0';
+                    sentence_display <= X"57" & X"52" & X"4F" & X"4E" & X"47"
+                                    & X"20" & X"20" & X"20" & X"20" & X"20"
+                                    & X"20" & X"20" & X"20" & X"20" & X"20"
+                                    & X"20";
+                                    
                     signal_main_next_state <= 9;
                         
 
@@ -216,6 +243,9 @@ begin
             signal_main_state <= signal_main_next_state;
         end if;
     end process;
+
+
+        
 
 
             
