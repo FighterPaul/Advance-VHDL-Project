@@ -55,6 +55,11 @@ signal display_debug : std_logic := '1';
 signal sentence_display : std_logic_vector(127 downto 0);
 
 
+signal count_2sec : integer range 0 to 40000000 := 0;
+constant ORIGINAL_CLK_HZ : integer := 20000000
+
+
+
 
 -- X"59",X"6F",X"75",X"20",X"50",X"72",X"65",X"73",X"73",X"20",X"41"
 -- You Press A
@@ -211,12 +216,18 @@ begin
                     end if;
 
                 when 8 =>
-                    signal_main_next_state <= 8;
+                    if(count_2sec = 40000000) then 
+                        signal_main_next_state <= 0;
+                    else 
+                        signal_main_next_state <= 8;
+                    end if;
 
                 when 9 =>
-                                    
-                    signal_main_next_state <= 9;
-                        
+                    if(count_2sec = 40000000) then 
+                        signal_main_next_state <= 0;
+                    else 
+                        signal_main_next_state <= 9;
+                    end if; 
 
                 when others =>
                     signal_main_next_state <= 0;
@@ -308,7 +319,21 @@ begin
     end process;
 
 
-
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            case(signal_main_state) is
+                when 8 | 9=> 
+                    if(count_2sec = 40000000) then
+                        count_2sec <= count_2sec;
+                    else
+                        count_2sec <= count_2sec + 1;
+                    end if;
+                when others =>
+                    count_2sec <= 0;
+            end case;
+        end if;
+    end process;
             
 
 end architecture arch;
