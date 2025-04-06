@@ -19,14 +19,22 @@ end entity;
 
 architecture arch of InterfaceLCD is
 
-    type arr is array(1 to 21) of std_logic_vector(7 downto 0);
-    constant data_rom : arr := (X"38", X"0C", X"06", X"01", X"C0", 
-                            X"30", X"31", X"32", X"33", X"34", X"35", X"36", X"37", X"38", X"39",
+    type arr_command is array(1 to 6) of std_logic_vector(7 downto 0);
+    constant command_rom : arr_command := (X"38", X"0C", X"06", X"01", X"C0", X"C0");
+
+
+
+    type arr_char is array(1 to 16) of std_logic_vector(7 downto 0);
+    constant byte_rom : arr_char := (X"30", X"31", X"32", X"33", X"34", X"35", X"36", X"37", X"38", X"39",
                             X"41", X"42", X"20", X"20", X"20", X"20");
+
     
     signal en_timing : integer range 0 to 100000 := 0;
 
-    signal data_pos : integer range 1 to 22 := 1;
+    signal command_pos : integer range 1 to 6 := 1;
+    signal byte_pos : integer range 1 to 17 := 1;
+
+    signal state : integer range 1 to 22 := 1;
 
 
 begin
@@ -37,30 +45,44 @@ begin
             en_timing <= en_timing + 1;
             if en_timing <= 50000 then
                 lcd_e <= '1';
-                data_out <= data_rom(data_pos);
 
             elsif (en_timing > 50000 and en_timing < 100000) then 
                 lcd_e <= '0';
 
-
             elsif (en_timing = 100000) then
                 en_timing <= 0;
-					 data_pos <= data_pos + 1;
+				state <= state + 1;
+
+                if(state <= 5) then
+                    command_pos <= command_pos + 1;
+                elsif (state > 5) then
+                    byte_pos <= byte_pos + 1;
+                end if;
+                
+                if (state = 21) then
+                    command_pos <= 5;
+                    byte_pos <= 1;
+                    state <= 5;
+                end if;
 
             end if;
 
 
-            if data_pos <= 5 then
+            if state <= 5 then      -- send command
                 lcd_rw <= '0';
                 lcd_rs <= '0';
-            elsif data_pos > 5 then
+
+                data_out <= command_rom(command_pos);
+
+
+            elsif state > 5 then    -- send data
                 lcd_rw <= '0';
                 lcd_rs <= '1';
+
+                data_out <= byte_rom(byte_pos);
+
             end if;
 
-            if data_pos = 22 then
-                data_pos <= 5;
-            end if;
         end if;
 
     end process;
