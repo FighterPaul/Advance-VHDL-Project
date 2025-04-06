@@ -24,9 +24,9 @@ architecture arch of InterfaceLCD is
                             X"30", X"31", X"32", X"33", X"34", X"35", X"36", X"37", X"38", X"39",
                             X"41", X"42", X"43", X"44", X"45", X"46");
     
-    signal en_timing : integer range 0 to 100000;
+    signal en_timing : integer range 0 to 100000 := 0;
 
-    signal data_pos : integer range 1 to 21;
+    signal data_pos : integer range 1 to 22 := 1;
 
 
 begin
@@ -45,6 +45,7 @@ begin
 
             elsif (en_timing = 100000) then
                 en_timing <= 0;
+					 data_pos <= data_pos + 1;
 
             end if;
 
@@ -57,7 +58,7 @@ begin
                 lcd_rs <= '1';
             end if;
 
-            if data_pos = 21 then
+            if data_pos = 22 then
                 data_pos <= 5;
             end if;
         end if;
