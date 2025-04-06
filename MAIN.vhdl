@@ -160,7 +160,6 @@ begin
                 when 1 =>                       -- wait for press first digit
 
                     if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
-                        press_fir_digit <= signal_current_byte_press;
                         signal_main_next_state <= 2;
                     else
                     
@@ -177,7 +176,6 @@ begin
                 when 3 =>                       -- wait for press second digit
 
                     if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
-                        press_sec_digit <= signal_current_byte_press;
                         signal_main_next_state <= 4;
                     else
                         signal_main_next_state <= 3;
@@ -213,20 +211,9 @@ begin
                     end if;
 
                 when 8 =>
-                    display_debug <= '0';
-                    sentence_display <= X"43" & X"4F" & X"52" & X"20" & X"20"
-                                        & X"20" & X"20" & X"20" & X"20" & X"20"
-                                        & X"20" & X"20" & X"20" & X"20" & X"20"
-                                        & X"20";
-
                     signal_main_next_state <= 8;
 
                 when 9 =>
-                    display_debug <= '0';
-                    sentence_display <= X"57" & X"52" & X"4F" & X"4E" & X"47"
-                                    & X"20" & X"20" & X"20" & X"20" & X"20"
-                                    & X"20" & X"20" & X"20" & X"20" & X"20"
-                                    & X"20";
                                     
                     signal_main_next_state <= 9;
                         
@@ -245,7 +232,81 @@ begin
     end process;
 
 
-        
+    process(clk)          -- process for first_digit press
+    begin
+        if rising_edge(clk) then
+            case(signal_main_state) is
+                when 0 =>
+                    press_fir_digit <= X"00";
+                when 1 =>
+                    if(signal_current_byte_press /= X"55") then
+                        press_fir_digit <= signal_current_byte_press;
+                    else
+                        press_fir_digit <= press_fir_digit;
+                    end if;
+                when others =>
+                        press_fir_digit <= press_fir_digit;
+            end case;
+        end if;
+    end process;
+
+
+    process(clk)          -- process for second_digit press
+    begin
+        if rising_edge(clk) then
+            case(signal_main_state) is
+                when 0 =>
+                    press_sec_digit <= X"00";
+                when 3 =>
+                    if(signal_current_byte_press /= X"55") then
+                        press_sec_digit <= signal_current_byte_press;
+                    else
+                        press_sec_digit <= press_sec_digit;
+                    end if;
+                when others =>
+                        press_sec_digit <= press_sec_digit;
+            end case;
+        end if;
+    end process;
+
+    process(clk)              -- process display_debug
+    begin
+        if rising_edge(clk) then
+
+            case(signal_main_state) is
+                when 8 | 9 => 
+                    display_debug <= '0';
+                when others =>
+                    display_debug <= '1';
+            end case;
+        end if;
+    end process;
+
+    process(clk)        -- process sentence_display
+    begin
+        if rising_edge(clk) then
+
+            case(signal_main_state) is
+                when 8 => 
+                    sentence_display <= X"43" & X"4F" & X"52" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20";
+                when 9 =>
+                    sentence_display <= X"57" & X"52" & X"4F" & X"4E" & X"47"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20";
+
+                when others =>
+                    sentence_display <= X"57" & X"57" & X"57" & X"57" & X"57"
+                                        & X"57" & X"57" & X"57" & X"57" & X"57"
+                                        & X"57" & X"57" & X"57" & X"57" & X"57"
+                                        & X"57";
+            end case;
+        end if;
+    end process;
+
 
 
             
