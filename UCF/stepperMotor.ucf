@@ -1,0 +1,8 @@
+
+# PlanAhead Generated physical constraints 
+
+NET "clk" LOC = P123;
+NET "dir_in" LOC = P57;
+NET "dir_out" LOC = P141;
+NET "step" LOC = P143;
+NET "en" LOC = P56;
