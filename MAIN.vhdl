@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 
 entity MainCirucit is 
@@ -7,8 +8,8 @@ port
 (
     clk : in std_logic;
 
-
-    -- byte_press : in std_logic_vector(7 downto)
+    byte_press : in std_logic_vector(7 downto 0);
+    clk_read_byte : in std_logic;
 
     lcd_rw : out std_logic;
     lcd_rs : out std_logic;
@@ -37,7 +38,14 @@ end component;
 
 signal signal_byte_send : std_logic_vector(127 downto 0);
 signal count_clk : integer range 0 to 20000000 := 0;
+signal signal_current_byte_press : std_logic_vector(7 downto 0);
 
+signal signal_main_state : integer range 0 to 10 := 0;
+signal signal_main_next_state : integer range 0 to 10 := 0;
+
+
+-- X"59",X"6F",X"75",X"20",X"50",X"72",X"65",X"73",X"73",X"20",X"41"
+-- You Press A
 
 begin
 
@@ -53,19 +61,26 @@ begin
         data_out => data_out
     );
 
+
+    -- X"4D" & X"41" & X"49" & X"4E" & X"20" & X"53" & X"54" & X"41" & X"54" & X"45" & X"20"
+    -- -- MAIN STATE 
+
     process(clk)
     begin
         case (count_clk) is
             when 0 to 10000000 =>
-                signal_byte_send <= X"30" & X"31" & X"32" & X"33" & X"34" & X"35" & X"36" & X"37" & X"38" & X"39"
-                                    & X"41" & X"42" & X"20" & X"20" & X"20" & X"20";
+                signal_byte_send <= X"59" & X"6F" & X"75" & X"20" & X"50"
+                                 & X"72" & X"65" & X"73" & X"73" & X"20"
+                                 & signal_current_byte_press & X"20" & X"20" & X"20" & X"20"
+                                 & X"20";
 
             when others =>
-                signal_byte_send <= X"30" & X"31" & X"32" & X"33" & X"34" & X"35" & X"36" & X"37" & X"38" & X"39"
-                                    & X"30" & X"31" & X"32" & X"33" & X"34" & X"35";
+                signal_byte_send <= X"4D" & X"41" & X"49" & X"4E" & X"20" 
+                                    & X"53" & X"54" & X"41" & X"54" & X"45" 
+                                    & X"20" & std_logic_vector(to_unsigned(signal_main_state + 48, 8)) & X"20" & X"20" & X"20"
+                                    & X"20";
         end case;
     end process;
-
 
 
     process(clk)
@@ -78,6 +93,77 @@ begin
             end if;
         end if;
     end process;
+
+
+    process(clk_read_byte)
+    begin
+        if rising_edge(clk_read_byte) then
+            signal_current_byte_press <= byte_press;
+        end if;
+    end process;
+
+
+    process(signal_current_byte_press)
+    begin 
+            case (signal_main_state) is
+
+                when 0 =>                       -- state reset everything
+
+                    if (signal_current_byte_press = "01010101") then        -- wait for unpress   ->  go to state 1
+                        signal_main_next_state <= 1;
+                    else
+                        signal_main_next_state <= 0;
+                    end if;
+                
+                when 1 =>                       -- wait for press first digit
+
+                    if(signal_current_byte_press /= "01010101") then        -- if user press some but -> go to state 2
+                        signal_main_next_state <= 2;
+                    else
+                        signal_main_next_state <= 1;
+                    end if;
+
+                when 2 =>
+                    if (signal_current_byte_press = "01010101") then        -- wait for unpress 'U'  ->  go to state 1
+                        signal_main_next_state <= 3;
+                    else
+                        signal_main_next_state <= 2;
+                    end if;
+
+                when 3 =>                       -- wait for press second digit
+
+                    if(signal_current_byte_press /= "01010101") then        -- if user press some but -> go to state 2
+                        signal_main_next_state <= 4;
+                    else
+                        signal_main_next_state <= 3;
+                    end if;
+
+
+                when 4 =>
+                    if (signal_current_byte_press = "01010101") then        -- wait for unpress 'U'  ->  go to state 1
+                        signal_main_next_state <= 5;
+                    else
+                        signal_main_next_state <= 4;
+                    end if;
+
+                when 5 =>
+                    signal_main_next_state <= 0;
+
+                when others =>
+                    signal_main_next_state <= 0;
+            end case;
+        end process;
+
+
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            signal_main_state <= signal_main_next_state;
+        end if;
+    end process;
+
+
+            
 
 end architecture arch;
             
