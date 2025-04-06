@@ -37,11 +37,19 @@ end component;
 
 
 signal signal_byte_send : std_logic_vector(127 downto 0);
-signal count_clk : integer range 0 to 20000000 := 0;
+signal count_clk : integer range 0 to 40000000 := 0;
 signal signal_current_byte_press : std_logic_vector(7 downto 0);
 
 signal signal_main_state : integer range 0 to 10 := 0;
 signal signal_main_next_state : integer range 0 to 10 := 0;
+
+
+signal press_fir_digit : std_logic_vector(7 downto 0);
+signal press_sec_digit : std_logic_vector(7 downto 0);
+
+constant CORRECT_FIR_DIGIT : std_logic_vector(7 downto 0) := X"32";
+constant CORRECT_SEC_DIGIT : std_logic_vector(7 downto 0) := X"35";
+
 
 
 -- X"59",X"6F",X"75",X"20",X"50",X"72",X"65",X"73",X"73",X"20",X"41"
@@ -65,6 +73,12 @@ begin
     -- X"4D" & X"41" & X"49" & X"4E" & X"20" & X"53" & X"54" & X"41" & X"54" & X"45" & X"20"
     -- -- MAIN STATE 
 
+    -- X"50"  & X"72" & X"65" & X"73" & X"73" & X"20" & X"46" & X"69" & X"72" & X"20" & X"44" & X"69" & X"20" & X"20"
+    -- Press Fir Di  
+
+    -- X"50" & X"72" & X"65" & X"73" & X"73" & X"20" & X"53" & X"65" & X"63" & X"20" & X"44" & X"69" & X"20" & X"20"
+    --Press Sec Di  
+
     process(clk)
     begin
         case (count_clk) is
@@ -74,11 +88,24 @@ begin
                                  & signal_current_byte_press & X"20" & X"20" & X"20" & X"20"
                                  & X"20";
 
-            when others =>
+            when 10000001 to 20000000 =>
                 signal_byte_send <= X"4D" & X"41" & X"49" & X"4E" & X"20" 
                                     & X"53" & X"54" & X"41" & X"54" & X"45" 
                                     & X"20" & std_logic_vector(to_unsigned(signal_main_state + 48, 8)) & X"20" & X"20" & X"20"
                                     & X"20";
+
+            when 20000001 to 30000000 => 
+                signal_byte_send <= X"50"  & X"72" & X"65" & X"73" & X"73" 
+                                    & X"20" & X"46" & X"69" & X"72" & X"20" 
+                                    & X"44" & X"69" & X"20" & X"20" & press_fir_digit
+                                    & X"20";
+
+            when others =>
+                signal_byte_send <= X"50" & X"72" & X"65" & X"73" & X"73" 
+                                    & X"20" & X"53" & X"65" & X"63" & X"20" 
+                                    & X"44" & X"69" & X"20" & X"20" & press_sec_digit
+                                    & X"20";
+                
         end case;
     end process;
 
@@ -86,7 +113,7 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            if count_clk = 20000000 then
+            if count_clk = 40000000 then
                 count_clk <= 0;
             else
                 count_clk <= count_clk + 1;
@@ -118,8 +145,10 @@ begin
                 when 1 =>                       -- wait for press first digit
 
                     if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
+                        press_fir_digit <= signal_current_byte_press;
                         signal_main_next_state <= 2;
                     else
+                    
                         signal_main_next_state <= 1;
                     end if;
 
@@ -133,6 +162,7 @@ begin
                 when 3 =>                       -- wait for press second digit
 
                     if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
+                        press_sec_digit <= signal_current_byte_press;
                         signal_main_next_state <= 4;
                     else
                         signal_main_next_state <= 3;
@@ -146,8 +176,8 @@ begin
                         signal_main_next_state <= 4;
                     end if;
 
-                when 5 =>               -- wait for press '*'  "00101010"
-                    if(signal_current_byte_press = X"2A") then
+                when 5 =>               -- wait for press 'u'  "01110101"
+                    if(signal_current_byte_press = X"75") then
                         signal_main_next_state <= 6;
                     else
                         signal_main_next_state <= 5;
@@ -161,7 +191,18 @@ begin
                     end if;
                 
                 when 7 =>
-                    signal_main_next_state <= 0;
+                    if (press_fir_digit = CORRECT_FIR_DIGIT and press_sec_digit = CORRECT_SEC_DIGIT) then
+                        signal_main_next_state <= 8;
+                    else
+                        signal_main_next_state <= 9;
+                    end if;
+
+                when 8 =>
+                    signal_main_next_state <= 8;
+                    
+                when 9 =>
+                    signal_main_next_state <= 9;
+                        
 
                 when others =>
                     signal_main_next_state <= 0;
