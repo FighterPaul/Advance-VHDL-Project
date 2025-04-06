@@ -9,6 +9,8 @@ port
 (
     clk : in std_logic;
 
+    byte_in : in std_logic_vector(127 downto 0);
+
     lcd_rw : out std_logic;
     lcd_rs : out std_logic;
     lcd_e : out std_logic;
@@ -25,8 +27,8 @@ architecture arch of InterfaceLCD is
 
 
     type arr_char is array(1 to 16) of std_logic_vector(7 downto 0);
-    constant byte_rom : arr_char := (X"30", X"31", X"32", X"33", X"34", X"35", X"36", X"37", X"38", X"39",
-                            X"41", X"42", X"20", X"20", X"20", X"20");
+    constant byte_rom : arr_char := (X"30"X"31"X"32"X"33"X"34"X"35"X"36"X"37", X"38", X"39",
+                    X"41"X"42"X"20"X"20"X"20"X"20");
 
     
     signal en_timing : integer range 0 to 100000 := 0;
@@ -55,6 +57,7 @@ begin
 
                 if(state <= 5) then
                     command_pos <= command_pos + 1;
+                    
                 elsif (state > 5) then
                     byte_pos <= byte_pos + 1;
                 end if;
@@ -79,7 +82,7 @@ begin
                 lcd_rw <= '0';
                 lcd_rs <= '1';
 
-                data_out <= byte_rom(byte_pos);
+                data_out <= byte_in( (8*byte_pos)-1  downto  (8*byte_pos)-8 );
 
             end if;
 
