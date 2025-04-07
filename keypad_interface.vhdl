@@ -255,7 +255,7 @@ architecture arch of InterfaceKeyPad is
 	begin
 		if rising_edge(clk) then
 			case(state) is
-				when 6 | 7 | 8 =>
+				when 8 =>
 					pulse_out <= '1';
 				when others => 
 					pulse_out <= '0';

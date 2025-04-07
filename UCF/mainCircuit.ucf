@@ -1,0 +1,38 @@
+
+
+# K4
+NET "lcd_rs" LOC = P126;
+NET "lcd_rw" LOC = P131;
+NET "lcd_e" LOC = P133;
+
+
+# K5
+NET "debug_byte_press[7]" LOC = P121;
+NET "debug_byte_press[6]" LOC = P120;
+NET "debug_byte_press[5]" LOC = P119;
+NET "debug_byte_press[4]" LOC = P118;
+NET "debug_byte_press[3]" LOC = P117;
+NET "debug_byte_press[2]" LOC = P116;
+NET "debug_byte_press[1]" LOC = P115;
+NET "debug_byte_press[0]" LOC = P114;
+
+
+
+
+NET "clk" LOC = P123;
+
+NET "row[3]" LOC = P14;
+NET "row[2]" LOC = P16;
+NET "row[1]" LOC = P21;
+NET "row[0]" LOC = P23;
+NET "col[3]" LOC = P5;
+NET "col[2]" LOC = P7;
+NET "col[1]" LOC = P9;
+NET "col[0]" LOC = P11;
+
+
+
+# PlanAhead Generated physical constraints 
+
+NET "dir_motor_out" LOC = P141;
+NET "step_motor_out" LOC = P143;

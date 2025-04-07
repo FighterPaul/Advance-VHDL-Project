@@ -8,9 +8,8 @@ port
 (
     clk : in std_logic;
 
-    byte_press : in std_logic_vector(7 downto 0);
-    clk_read_byte : in std_logic;
-
+    row : out std_logic_vector(3 downto 0);
+    col : in std_logic_vector(3 downto 0);
 
 
     dir_motor_out : out std_logic;
@@ -19,7 +18,10 @@ port
     lcd_rw : out std_logic;
     lcd_rs : out std_logic;
     lcd_e : out std_logic;
-    data_out : out std_logic_vector(7 downto 0)
+    data_out : out std_logic_vector(7 downto 0);
+
+
+    debug_byte_press : out std_logic_vector(7 downto 0)
 
 );
 end entity;
@@ -53,6 +55,24 @@ port
 end component;
 
 
+component InterfaceKeyPad
+port
+(
+    clk : in  std_logic;		-- 20MHz
+		
+    row : out std_logic_vector(3 downto 0);		--
+    col : in  std_logic_vector(3 downto 0);
+
+    byte_out : out std_logic_vector(7 downto 0);		--
+    pulse_out : out std_logic	
+);
+end component;
+
+
+signal byte_press : std_logic_vector(7 downto 0);
+signal clk_read_byte : std_logic;
+
+
 signal signal_byte_send : std_logic_vector(127 downto 0);
 signal count_clk : integer range 0 to 40000000 := 0;
 signal signal_current_byte_press : std_logic_vector(7 downto 0);
@@ -81,8 +101,22 @@ constant ORIGINAL_CLK_HZ : integer := 20000000;
 signal signal_en_motor : std_logic := '0';
 signal signal_dir_motor : std_logic := '0';
 
-
 signal signal_is_door_open : std_logic := '0';
+
+
+
+
+----------------------signal CLOCK CNT-----------------
+signal signal_clock_d_1 : std_logic_vector(3 downto 0);
+signal signal_clock_d_2 : std_logic_vector(3 downto 0);
+signal signal_clock_d_3 : std_logic_vector(3 downto 0);
+signal signal_clock_d_4 : std_logic_vector(3 downto 0);
+
+
+signal signal_clock_hex_d_1 : std_logic_vector(7 downto 0);
+signal signal_clock_hex_d_2 : std_logic_vector(7 downto 0);
+signal signal_clock_hex_d_3 : std_logic_vector(7 downto 0);
+signal signal_clock_hex_d_4 : std_logic_vector(7 downto 0);
 
 
 
@@ -91,6 +125,19 @@ signal signal_is_door_open : std_logic := '0';
 -- You Press A
 
 begin
+
+    place_InterfaceKeyPad : InterfaceKeyPad
+    port map
+    (
+        clk => clk,
+        row => row,
+        col => col,
+
+        byte_out => byte_press,
+        pulse_out => clk_read_byte
+    );
+
+
 
     place_InterfaceLCD : InterfaceLCD
     port map
@@ -187,95 +234,97 @@ begin
     end process;
 
 
-    process(signal_current_byte_press, signal_main_state)
+    process(clk)
     begin 
-            case (signal_main_state) is
+            if rising_edge(clk) then
+                case (signal_main_state) is
 
-                when 0 =>                       -- state reset everything
+                    when 0 =>                       -- state reset everything
 
-                    if (signal_current_byte_press = X"55") then        -- wait for unpress   ->  go to state 1
-                        signal_main_next_state <= 1;
-                    else
-                        signal_main_next_state <= 0;
-                    end if;
-                
-                when 1 =>                       -- wait for press first digit
-
-                    if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
-                        signal_main_next_state <= 2;
-                    else
+                        if (signal_current_byte_press = X"55") then        -- wait for unpress   ->  go to state 1
+                            signal_main_next_state <= 1;
+                        else
+                            signal_main_next_state <= 0;
+                        end if;
                     
-                        signal_main_next_state <= 1;
-                    end if;
+                    when 1 =>                       -- wait for press first digit
 
-                when 2 =>
-                    if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
-                        signal_main_next_state <= 3;
-                    else
-                        signal_main_next_state <= 2;
-                    end if;
+                        if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
+                            signal_main_next_state <= 2;
+                        else
+                        
+                            signal_main_next_state <= 1;
+                        end if;
 
-                when 3 =>                       -- wait for press second digit
+                    when 2 =>
+                        if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
+                            signal_main_next_state <= 3;
+                        else
+                            signal_main_next_state <= 2;
+                        end if;
 
-                    if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
-                        signal_main_next_state <= 4;
-                    else
-                        signal_main_next_state <= 3;
-                    end if;
+                    when 3 =>                       -- wait for press second digit
+
+                        if(signal_current_byte_press /= X"55") then        -- if user press some but -> go to state 2
+                            signal_main_next_state <= 4;
+                        else
+                            signal_main_next_state <= 3;
+                        end if;
 
 
-                when 4 =>                       -- wait for unpress 'U'
-                    if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
-                        signal_main_next_state <= 5;
-                    else
-                        signal_main_next_state <= 4;
-                    end if;
+                    when 4 =>                       -- wait for unpress 'U'
+                        if (signal_current_byte_press = X"55") then        -- wait for unpress 'U'  ->  go to state 1
+                            signal_main_next_state <= 5;
+                        else
+                            signal_main_next_state <= 4;
+                        end if;
 
-                when 5 =>               -- wait for press 'u'  "01110101"
-                    if(signal_current_byte_press = X"75") then
-                        signal_main_next_state <= 6;
-                    else
-                        signal_main_next_state <= 5;
-                    end if;
+                    when 5 =>               -- wait for press '*'  
+                        if(signal_current_byte_press = X"2A") then
+                            signal_main_next_state <= 6;
+                        else
+                            signal_main_next_state <= 5;
+                        end if;
 
-                when 6 =>                   -- wait for unpress 'U'
-                    if(signal_current_byte_press = X"55") then
-                        signal_main_next_state <= 7;
-                    else
-                        signal_main_next_state <= 6;
-                    end if;
-                
-                when 7 =>
-                    if (press_fir_digit = CORRECT_FIR_DIGIT and press_sec_digit = CORRECT_SEC_DIGIT) then
-                        signal_main_next_state <= 8;
-                    else
-                        signal_main_next_state <= 9;
-                    end if;
+                    when 6 =>                   -- wait for unpress 'U'
+                        if(signal_current_byte_press = X"55") then
+                            signal_main_next_state <= 7;
+                        else
+                            signal_main_next_state <= 6;
+                        end if;
+                    
+                    when 7 =>
+                        if (press_fir_digit = CORRECT_FIR_DIGIT and press_sec_digit = CORRECT_SEC_DIGIT) then
+                            signal_main_next_state <= 8;
+                        else
+                            signal_main_next_state <= 9;
+                        end if;
 
-                when 8 =>
-                    if(count_2sec = 40000000) then 
-                        signal_main_next_state <= 10;
-                    else 
-                        signal_main_next_state <= 8;
-                    end if;
+                    when 8 =>
+                        if(count_2sec = 40000000) then 
+                            signal_main_next_state <= 10;
+                        else 
+                            signal_main_next_state <= 8;
+                        end if;
 
-                when 9 =>
-                    if(count_2sec = 40000000) then 
-                        signal_main_next_state <= 10;
-                    else 
-                        signal_main_next_state <= 9;
-                    end if; 
+                    when 9 =>
+                        if(count_2sec = 40000000) then 
+                            signal_main_next_state <= 10;
+                        else 
+                            signal_main_next_state <= 9;
+                        end if; 
 
-                when 10 =>
-                    if signal_is_door_open = '0' then 
+                    when 10 =>
+                        if signal_is_door_open = '0' then 
+                            signal_main_next_state <= 0;
+                        else
+                            signal_main_next_state <= 10;
+                        end if;
+
+                    when others =>
                         signal_main_next_state <= 0;
-                    else
-                        signal_main_next_state <= 10;
-                    end if;
-
-                when others =>
-                    signal_main_next_state <= 0;
-            end case;
+                end case;
+            end if;
         end process;
 
 
@@ -287,15 +336,15 @@ begin
     end process;
 
 
-    process(clk)          -- process for first_digit press
+    process(clk_read_byte)          -- process for first_digit press
     begin
-        if rising_edge(clk) then
+        if rising_edge(clk_read_byte) then
             case(signal_main_state) is
                 when 0 =>
                     press_fir_digit <= X"00";
                 when 1 =>
-                    if(signal_current_byte_press /= X"55") then
-                        press_fir_digit <= signal_current_byte_press;
+                    if(byte_press /= X"55") then
+                        press_fir_digit <= byte_press;
                     else
                         press_fir_digit <= press_fir_digit;
                     end if;
@@ -306,15 +355,15 @@ begin
     end process;
 
 
-    process(clk)          -- process for second_digit press
+    process(clk_read_byte)          -- process for second_digit press
     begin
-        if rising_edge(clk) then
+        if rising_edge(clk_read_byte) then
             case(signal_main_state) is
                 when 0 =>
                     press_sec_digit <= X"00";
                 when 3 =>
-                    if(signal_current_byte_press /= X"55") then
-                        press_sec_digit <= signal_current_byte_press;
+                    if(byte_press /= X"55") then
+                        press_sec_digit <= byte_press;
                     else
                         press_sec_digit <= press_sec_digit;
                     end if;
@@ -468,6 +517,9 @@ begin
             end case;
         end if;
     end process;
+
+
+    debug_byte_press <= signal_current_byte_press;
             
 
 end architecture arch;
