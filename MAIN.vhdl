@@ -21,6 +21,11 @@ port
     data_out : out std_logic_vector(7 downto 0);
 
 
+-----------------------------FOR  CLOCK MODULE-----------------------
+    ShowSec : in std_logic;
+    SetTime : in std_logic;
+
+    --  DUBUG Proposs----------------------------
     debug_byte_press : out std_logic_vector(7 downto 0)
 
 );
@@ -28,6 +33,20 @@ end entity;
 
 
 architecture arch of MainCirucit is
+
+component ClockCountV2
+port
+(
+    SetTime,
+    ShowSec,
+    Clk : in std_logic;
+
+    Digit1,
+    Digit2,
+    Digit3,
+    Digit4 : out std_logic_vector(7 downto 0)
+);
+end component;
 
 component InterfaceLCD
 port
@@ -107,17 +126,11 @@ signal signal_is_door_open : std_logic := '0';
 
 
 ----------------------signal CLOCK CNT-----------------
-signal signal_clock_d_1 : std_logic_vector(3 downto 0);
-signal signal_clock_d_2 : std_logic_vector(3 downto 0);
-signal signal_clock_d_3 : std_logic_vector(3 downto 0);
-signal signal_clock_d_4 : std_logic_vector(3 downto 0);
-
-
-signal signal_clock_hex_d_1 : std_logic_vector(7 downto 0);
-signal signal_clock_hex_d_2 : std_logic_vector(7 downto 0);
-signal signal_clock_hex_d_3 : std_logic_vector(7 downto 0);
-signal signal_clock_hex_d_4 : std_logic_vector(7 downto 0);
-
+signal signal_clock_d_1 : std_logic_vector(7 downto 0);
+signal signal_clock_d_2 : std_logic_vector(7 downto 0);
+signal signal_clock_d_3 : std_logic_vector(7 downto 0);
+signal signal_clock_d_4 : std_logic_vector(7 downto 0);
+-------------------------------------------------------
 
 
 
@@ -125,6 +138,19 @@ signal signal_clock_hex_d_4 : std_logic_vector(7 downto 0);
 -- You Press A
 
 begin
+
+    place_ClockCountV2 : ClockCountV2
+    port map
+    (
+        SetTime => SetTime,
+        ShowSec => ShowSec,
+        Clk => clk,
+
+        Digit1 => signal_clock_d_1,
+        Digit2 => signal_clock_d_3,
+        Digit3 => signal_clock_d_2,
+        Digit4 => signal_clock_d_4
+    );
 
     place_InterfaceKeyPad : InterfaceKeyPad
     port map
@@ -412,9 +438,9 @@ begin
                                         & X"2E" & X"20" & X"20" & X"20" & X"20" 
                                         & X"20";
                 when 1 =>
-                    sentence_display <= X"45" & X"6E" & X"74" & X"65" & X"72" 
-                                        & X"20" & X"50" & X"61" & X"73" & X"73" 
-                                        & X"77" & X"6F" & X"72" & X"64" & X"20" 
+                    sentence_display <= signal_clock_d_1 & signal_clock_d_2 & X"20" & signal_clock_d_3 & signal_clock_d_4 
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
                                         & X"20";
                 when 2 =>
                     sentence_display <= press_fir_digit & X"20" & X"20" & X"20" & X"20" 
