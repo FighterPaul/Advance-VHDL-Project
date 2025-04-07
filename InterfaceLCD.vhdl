@@ -27,8 +27,8 @@ architecture arch of InterfaceLCD is
 
 
     type arr_char is array(1 to 16) of std_logic_vector(7 downto 0);
-    constant byte_rom : arr_char := (X"30"X"31"X"32"X"33"X"34"X"35"X"36"X"37", X"38", X"39",
-                    X"41"X"42"X"20"X"20"X"20"X"20");
+    -- constant byte_rom : arr_char := (X"30"X"31"X"32"X"33"X"34"X"35"X"36"X"37", X"38", X"39",
+    --                 X"41"X"42"X"20"X"20"X"20"X"20");
 
     
     signal en_timing : integer range 0 to 100000 := 0;
