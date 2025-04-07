@@ -1,0 +1,36 @@
+
+# PlanAhead Generated physical constraints 
+
+NET "data_in[7]" LOC = P55;
+NET "data_in[6]" LOC = P56;
+NET "data_in[5]" LOC = P57;
+NET "data_in[4]" LOC = P58;
+NET "data_in[3]" LOC = P59;
+NET "data_in[2]" LOC = P61;
+NET "data_in[1]" LOC = P62;
+NET "data_in[0]" LOC = P66;
+NET "data_out[7]" LOC = P121;
+NET "data_out[6]" LOC = P120;
+NET "data_out[5]" LOC = P119;
+NET "data_out[4]" LOC = P118;
+NET "data_out[3]" LOC = P117;
+NET "data_out[2]" LOC = P116;
+NET "data_out[1]" LOC = P115;
+NET "data_out[0]" LOC = P114;
+NET "debug_data[7]" LOC = P67;
+NET "debug_data[6]" LOC = P74;
+NET "debug_data[5]" LOC = P75;
+NET "debug_data[4]" LOC = P78;
+NET "debug_data[3]" LOC = P79;
+NET "debug_data[2]" LOC = P80;
+NET "debug_data[1]" LOC = P81;
+NET "debug_data[0]" LOC = P82;
+NET "debug_e" LOC = P87;
+NET "debug_rs" LOC = P84;
+NET "debug_rw" LOC = P85;
+NET "e_in" LOC = P47;
+NET "e_out" LOC = P133;
+NET "rs_out" LOC = P126;
+NET "rw_out" LOC = P131;
+NET "rs_in" LOC = P112;
+NET "rw_in" LOC = P99;
