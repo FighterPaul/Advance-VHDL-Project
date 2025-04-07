@@ -335,7 +335,7 @@ begin
 
                     when 9 =>
                         if(count_2sec = 40000000) then 
-                            signal_main_next_state <= 10;
+                            signal_main_next_state <= 0;
                         else 
                             signal_main_next_state <= 9;
                         end if; 
@@ -488,7 +488,7 @@ begin
     begin
         if rising_edge(clk) then
             case(signal_main_state) is
-                when 8 | 9=> 
+                when 8 | 9 => 
                     if(count_2sec = 40000000) then
                         count_2sec <= count_2sec;
                     else
@@ -508,7 +508,7 @@ begin
     begin
         if rising_edge(clk) then
             case(signal_main_state) is
-                when 8 | 9 =>
+                when 8 =>
                     if count_open_50_clk < 4000000 then
                         signal_dir_motor <= '1';
                         signal_en_motor <= '1';
