@@ -57,7 +57,13 @@ port
     lcd_rw : out std_logic;
     lcd_rs : out std_logic;
     lcd_e : out std_logic;
-    data_out : out std_logic_vector(7 downto 0)
+    data_out : out std_logic_vector(7 downto 0);
+
+
+    clock_d_1 : in  std_logic_vector(7 downto 0);
+    clock_d_2 : in  std_logic_vector(7 downto 0);
+    clock_d_3 : in  std_logic_vector(7 downto 0);
+    clock_d_4 : in  std_logic_vector(7 downto 0)
 );
 end component;
 
@@ -174,7 +180,12 @@ begin
         lcd_rw => lcd_rw,
         lcd_rs => lcd_rs,
         lcd_e  => lcd_e,
-        data_out => data_out
+        data_out => data_out,
+
+        clock_d_1 => signal_clock_d_1,
+        clock_d_2 => signal_clock_d_3,
+        clock_d_3 => signal_clock_d_2,
+        clock_d_4 => signal_clock_d_4
     );
 
     place_InterfaceStepperMotor : InterfaceStepperMotor
@@ -415,7 +426,7 @@ begin
                 when 8 | 9 => 
                     display_debug <= '0';
                 when others =>
-                    display_debug <= '1';
+                    display_debug <= '0';
             end case;
         end if;
     end process;
@@ -426,7 +437,11 @@ begin
     -- X"49" & X"6E" & X"69" & X"74" & X"69" & X"61" & X"6C" & X"20" & X"2E" & X"2E" & X"2E" & X"20" & X"20" & X"20" & X"20" & X"20"
     -- Enter Password  
     -- X"45" & X"6E" & X"74" & X"65" & X"72" & X"20" & X"50" & X"61" & X"73" & X"73" & X"77" & X"6F" & X"72" & X"64" & X"20" & X"20"
-
+    -- welcome
+    -- x"57" & x"65" & x"6C" & x"63" & x"6F" 
+    -- & x"6D" & x"65" & X"20" & X"20" & X"20"
+    -- & X"01" & X"20" & X"20" & X"20" & X"20"
+    -- & X"20"
 
     begin
         if rising_edge(clk) then
@@ -438,9 +453,9 @@ begin
                                         & X"2E" & X"20" & X"20" & X"20" & X"20" 
                                         & X"20";
                 when 1 =>
-                    sentence_display <= signal_clock_d_1 & signal_clock_d_2 & X"20" & signal_clock_d_3 & signal_clock_d_4 
+                    sentence_display <= signal_clock_d_1 & signal_clock_d_2 & X"3A" & signal_clock_d_3 & signal_clock_d_4 
                                         & X"20" & X"20" & X"20" & X"20" & X"20"
-                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"00" & X"20" & X"20" & X"20" & X"20"
                                         & X"20";
                 when 2 =>
                     sentence_display <= press_fir_digit & X"20" & X"20" & X"20" & X"20" 
@@ -464,9 +479,9 @@ begin
                                         & X"20";
                 
                 when 8 => 
-                    sentence_display <= X"43" & X"4F" & X"52" & X"20" & X"20"
-                                        & X"20" & X"20" & X"20" & X"20" & X"20"
-                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                    sentence_display <= x"57" & x"65" & x"6C" & x"63" & x"6F" 
+                                        & x"6D" & x"65" & X"20" & X"20" & X"20"
+                                        & X"01" & X"20" & X"20" & X"20" & X"20"
                                         & X"20";
                 when 9 =>
                     sentence_display <= X"57" & X"52" & X"4F" & X"4E" & X"47"
@@ -475,10 +490,10 @@ begin
                                         & X"20";
 
                 when others =>
-                    sentence_display <= X"57" & X"57" & X"57" & X"57" & X"57"
-                                        & X"57" & X"57" & X"57" & X"57" & X"57"
-                                        & X"57" & X"57" & X"57" & X"57" & X"57"
-                                        & X"57";
+                    sentence_display <= X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20" & X"20" & X"20" & X"20" & X"20"
+                                        & X"20";
             end case;
         end if;
     end process;
@@ -550,4 +565,5 @@ begin
 
 end architecture arch;
             
+
 
